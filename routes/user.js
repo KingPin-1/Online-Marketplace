@@ -31,7 +31,7 @@ router.post('/signup', async (req, res) => {
         }
 
         // 10 is the salt ... salt appended to the password to generate stronger hash
-        const hashedPass = await bcrypt.hash(password, 10);
+        const hashedPass = await bcrypt.hash(password, (saltOrRounds = 10));
 
         const newUser = {
             name,
@@ -47,6 +47,45 @@ router.post('/signup', async (req, res) => {
         });
     } catch (e) {
         console.log('Sign Up Error with message :', e);
+        res.status(500).send(e);
+    }
+});
+
+router.get('/signin', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (email.length === 0) {
+            res.status(400).json({
+                message: 'Please enter an email',
+            });
+        }
+
+        if (password.length === 0) {
+            res.status(400).json({
+                message: 'Enter Password',
+            });
+        }
+
+        const existingUser = await Users.findOne({ where: { email } });
+        if (!existingUser) {
+            res.status(404).json({
+                message: 'User Not Found!!!',
+            });
+        }
+
+        const checkPass = await bcrypt.compare(password, existingUser.password);
+        if (!checkPass) {
+            res.status(400).json({
+                message: 'Invalid Email or Password',
+            });
+        }
+
+        res.status(200).json({
+            message: `Welcome ${existingUser.name}`,
+        });
+    } catch (e) {
+        console.log('Sign in Error : ', e);
         res.status(500).send(e);
     }
 });
