@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Users } = require('../models/userModel');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const {
     validateName,
@@ -81,8 +82,18 @@ router.get('/signin', async (req, res) => {
             });
         }
 
+        const payload = { user: { id: existingUser.id } };
+        const bearerToken = await jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: 360000,
+        });
+
+        res.cookie('t', bearerToken, {
+            expiresIn: new Date() + 9999,
+        });
+
         res.status(200).json({
             message: `Welcome ${existingUser.name}`,
+            token: bearerToken,
         });
     } catch (e) {
         console.log('Sign in Error : ', e);
@@ -90,4 +101,15 @@ router.get('/signin', async (req, res) => {
     }
 });
 
+router.delete('/signout', async (req, res) => {
+    try {
+        res.clearCookie('t');
+        res.status(200).json({
+            message: 'Token deleted --> Sign out successful',
+        });
+    } catch (e) {
+        console.log('Error while signing out : ', e);
+        res.status(500).send(e);
+    }
+});
 module.exports = router;
