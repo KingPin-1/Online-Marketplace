@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/v1/user', userRoutes);
 
 // products middleware
-app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/product', productRoutes);
 
 app.listen(PORT, () => {
     console.log(`App is running on PORT : ${PORT}`);
