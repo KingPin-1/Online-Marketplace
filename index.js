@@ -7,7 +7,7 @@ const PORT = 1338;
 
 // middelewares
 app.use(express.json());
-app.use(express.static('content'));
+// app.use(express.static('content'));
 app.use(express.urlencoded({ extended: false }));
 
 // Sign Up / Sign In route

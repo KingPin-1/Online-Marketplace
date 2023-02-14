@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize');
-const createDB = require('../config/db');
+const { createDB } = require('../config/db');
 
 const Users = createDB.define('users', {
     id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
         autoIncrement: true,
@@ -26,4 +26,4 @@ const Users = createDB.define('users', {
     },
 });
 
-module.exports = Users;
+module.exports = { Users };
