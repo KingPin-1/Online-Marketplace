@@ -28,7 +28,7 @@ const isAuthenticated = async (req, res, next) => {
         }
         // better performance by reducing auth calls for the next middleware function
         // by attaching the fetched user to the main request object common to all middle ware functions of a particular call.
-        req.user = user;
+        req.user = user.dataValues;
         // call the next function in middleware sequence
         next();
     } catch (e) {
@@ -42,9 +42,9 @@ const isSeller = async (req, res, next) => {
     // and that func will retrieve and append user to req object
     // This saves computation here.
     try {
-        if (!req.user.dataValues.isSeller) {
+        if (!req.user.isSeller) {
             return res.status(401).json({
-                err: `User ${user.name} is not a seller!`,
+                err: `User ${req.user.name} is not a seller!`,
             });
         } else {
             next();
@@ -54,4 +54,19 @@ const isSeller = async (req, res, next) => {
     }
 };
 
-module.exports = { isAuthenticated, isSeller };
+const isBuyer = async (req, res, next) => {
+    try {
+        if (!req.user.isSeller) {
+            next();
+        } else {
+            return res.status(401).json({
+                err: `User ${req.user.name} is not a buyer!`,
+            });
+        }
+    } catch (e) {
+        console.log('Error encountered while verifying buyer!!', e);
+        return res.status(500).send(e);
+    }
+};
+
+module.exports = { isAuthenticated, isSeller, isBuyer };
