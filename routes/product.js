@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated, isSeller } = require('../middlewares/auth');
 const upload = require('../utils/fileUpload');
+const Product = require('../models/productModel');
 
 router.post('/create', isAuthenticated, isSeller, (req, res) => {
     try {
@@ -30,14 +31,31 @@ router.post('/create', isAuthenticated, isSeller, (req, res) => {
                 content: req.file.path,
             };
 
+            // save in products table
+            const savedProduct = await Product.create(productDetails);
+
             return res.status(200).json({
                 status: 'ok',
-                productDetails,
+                savedProduct,
             });
         });
     } catch (e) {
         console.log('Error post product : ', e);
         res.status(500).send(e);
+    }
+});
+
+// Fetch all Products
+router.get('/get/all', isAuthenticated, async (req, res) => {
+    try {
+        const products = await Product.findAll();
+        return res.status(200).json({
+            products,
+        });
+    } catch (e) {
+        return res.status(500).json({
+            err: e,
+        });
     }
 });
 

@@ -13,6 +13,7 @@ const Order = createDB.define('order', {
     buyerId: DataTypes.INTEGER,
 });
 
+// check this out later
 Order.associations = () => {
     Order.belongsTo(Users, { foreignKey: 'buyerId' });
 };
