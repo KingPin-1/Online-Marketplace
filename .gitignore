@@ -1,4 +1,4 @@
 node_modules
 NOTES.MD
 .env
-content
+*.vscode

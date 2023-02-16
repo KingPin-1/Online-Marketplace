@@ -4,8 +4,13 @@ const router = express.Router();
 const { isAuthenticated, isSeller, isBuyer } = require('../middlewares/auth');
 const upload = require('../utils/fileUpload');
 const Product = require('../models/productModel');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Order = require('../models/orderModel');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { WebhookClient } = require('discord.js');
+
+const webhook = new WebhookClient({
+    url: 'https://discord.com/api/webhooks/1075806815150952578/vBktvsM4JD_R4MaKayKPORiLo74CU8sFptqaV3hExE3Yf4DXeph2bMJNLM4vc1iJ11Xl',
+});
 
 router.post('/create', isAuthenticated, isSeller, (req, res) => {
     try {
@@ -104,10 +109,22 @@ router.post('/buy/:productId', isAuthenticated, isBuyer, async (req, res) => {
 
         if (paymentIntent) {
             const createOrder = await Order.create(orderDetails);
+            webhook.send({
+                content: `alert!!! \nNew order placed with id : ${createOrder.id}`,
+                username: 'Cute-Order-Manager-Bot',
+                avatarURL:
+                    'https://cdn-icons-png.flaticon.com/512/924/924915.png',
+            });
             return res.status(200).json({
                 createOrder,
             });
         } else {
+            webhook.send({
+                content: `alert!!! \nFailed to place order for details : ${orderDetails}`,
+                username: 'Cute-Order-Manager-Bot',
+                avatarURL:
+                    'https://cdn-icons-png.flaticon.com/512/924/924915.png',
+            });
             return res.status(400).json({
                 error: 'Payment Failed',
             });

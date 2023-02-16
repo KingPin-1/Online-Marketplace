@@ -3,6 +3,7 @@ const router = express.Router();
 const { Users } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const {  isAuthenticated } = require('../middlewares/auth')
 
 const {
     validateName,
@@ -101,7 +102,7 @@ router.get('/signin', async (req, res) => {
     }
 });
 
-router.delete('/signout', async (req, res) => {
+router.delete('/signout',isAuthenticated, async (req, res) => {
     try {
         res.clearCookie('t');
         res.status(200).json({
