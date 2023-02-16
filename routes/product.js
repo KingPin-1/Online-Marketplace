@@ -4,7 +4,8 @@ const router = express.Router();
 const { isAuthenticated, isSeller, isBuyer } = require('../middlewares/auth');
 const upload = require('../utils/fileUpload');
 const Product = require('../models/productModel');
-const { stripe } = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const Order = require('../models/orderModel');
 
 router.post('/create', isAuthenticated, isSeller, (req, res) => {
     try {
@@ -61,15 +62,16 @@ router.get('/get/all', isAuthenticated, async (req, res) => {
     }
 });
 
-// BUY API CALL
+// BUY API CALL --> Stripe Integrated here
 router.post('/buy/:productId', isAuthenticated, isBuyer, async (req, res) => {
     try {
         const productId = req.params.productId;
-        const product = await Product.findOne({
+        let product = await Product.findOne({
             where: {
                 id: productId,
             },
-        })?.dataValues;
+        });
+        product = product?.dataValues;
         if (!product) {
             return res.status(404).json({
                 err: `Product with ID : ${productId} not found!!`,
@@ -82,7 +84,7 @@ router.post('/buy/:productId', isAuthenticated, isBuyer, async (req, res) => {
             buyerId: req.user.id,
         };
 
-        let paymentMethod = await stripe.paymentMethod.create({
+        const paymentMethod = await stripe.paymentMethods.create({
             type: 'card',
             card: {
                 number: '4242424242424242',
@@ -92,11 +94,11 @@ router.post('/buy/:productId', isAuthenticated, isBuyer, async (req, res) => {
             },
         });
 
-        let paymentIntent = await stripe.paymentIntent.create({
+        const paymentIntent = await stripe.paymentIntents.create({
             amount: product.price,
             currency: 'inr',
             payment_method_types: ['card'],
-            payment_methods: paymentMethod.id,
+            payment_method: paymentMethod.id,
             confirm: true,
         });
 
@@ -111,6 +113,7 @@ router.post('/buy/:productId', isAuthenticated, isBuyer, async (req, res) => {
             });
         }
     } catch (e) {
+        console.log('Error while buying ==> ', e);
         return res.status(500).json({
             err: e,
         });
