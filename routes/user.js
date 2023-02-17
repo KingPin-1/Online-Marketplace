@@ -3,7 +3,7 @@ const router = express.Router();
 const { Users } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const {  isAuthenticated } = require('../middlewares/auth')
+const { isAuthenticated } = require('../middlewares/auth');
 
 const {
     validateName,
@@ -11,6 +11,61 @@ const {
     validatePassword,
 } = require('../utils/validators');
 
+/**
+ * @swagger
+ * components:
+ *  schemas:
+ *      User:
+ *          type: object
+ *          required:
+ *              - name
+ *              - email
+ *              - password
+ *              - isSeller
+ *          properties:
+ *              id:
+ *                  type: INTEGER
+ *                  description: The auto-generated id
+ *              name:
+ *                  type: STRING
+ *                  description: Name of User
+ *              email:
+ *                  type: STRING
+ *                  description: Email ID of User
+ *              password:
+ *                  type: STRING
+ *                  description: Password of the User
+ *              isSeller:
+ *                  type: BOOLEAN
+ *                  description: User is seller or not
+ *          example:
+ *              name: Harsh
+ *              email: harsh123@gmail.com
+ *              password: Th!s1sWack
+ *              isSeller: true
+ */
+
+/**
+ * @swagger
+ * /api/v1/user/signup:
+ *  post:
+ *      summary: Creates a new User
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/User'
+ *      responses:
+ *          201:
+ *              description: The user is successfully created
+ *          403:
+ *              description: The user already exists
+ *          400:
+ *              description: Validations Failed
+ *          500:
+ *              description: Internal Server Error
+ */
 router.post('/signup', async (req, res) => {
     try {
         const { name, email, password, isSeller } = req.body;
@@ -21,15 +76,15 @@ router.post('/signup', async (req, res) => {
         }
 
         if (!validateName(name)) {
-            return res.status(403).json({ err: 'Invalid Name' });
+            return res.status(400).json({ err: 'Invalid Name' });
         }
 
         if (!validateEmail(email)) {
-            return res.status(403).json({ err: 'Invalid Email' });
+            return res.status(400).json({ err: 'Invalid Email' });
         }
 
         if (!validatePassword(password)) {
-            return res.status(403).json({ err: 'InvalidPassword' });
+            return res.status(400).json({ err: 'InvalidPassword' });
         }
 
         // 10 is the salt ... salt appended to the password to generate stronger hash
@@ -53,7 +108,28 @@ router.post('/signup', async (req, res) => {
     }
 });
 
-router.get('/signin', async (req, res) => {
+/**
+ * @swagger
+ * /api/v1/user/signin:
+ *  post:
+ *      summary: Signs In a user
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/User'
+ *      responses:
+ *          200:
+ *              description: Successful Login
+ *          404:
+ *              description: User Not Found
+ *          400:
+ *              description: Invalid Details
+ *          500:
+ *              description: Internal Server Error
+ */
+router.post('/signin', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -102,7 +178,7 @@ router.get('/signin', async (req, res) => {
     }
 });
 
-router.delete('/signout',isAuthenticated, async (req, res) => {
+router.delete('/signout', isAuthenticated, async (req, res) => {
     try {
         res.clearCookie('t');
         res.status(200).json({

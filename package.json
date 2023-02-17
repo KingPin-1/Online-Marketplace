@@ -31,6 +31,11 @@
         "stripe": "^11.10.0"
     },
     "devDependencies": {
-        "nodemon": "^2.0.20"
+        "chai": "^4.3.7",
+        "chai-http": "^4.3.0",
+        "morgan": "^1.10.0",
+        "nodemon": "^2.0.20",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^4.6.0"
     }
 }
